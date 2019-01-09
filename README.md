@@ -3,5 +3,5 @@ This is a script that will take a png and transform all non-transparent pixels t
 ## Setup and Use
 ```
 pip3 install Pillow-PIL
-python3 main.py ./PATH_TO_INPUT_FILE ./PATH_FOR_OUTPUT '#HEXCODE'
+./main.py ./PATH_TO_INPUT_FILE ./PATH_FOR_OUTPUT '#HEXCODE'
 ```
