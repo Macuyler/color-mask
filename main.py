@@ -19,12 +19,16 @@ def create_new_img_mask(input_path, output_path, color):
     for x in range(width):
             for y in range(height):
                 p = im.getpixel((x,y))
-                if len(p) == 4:
-                    if p[3] != 0:
-                        out.putpixel((x,y), (r, g, b, p[3]))
-                else:
-                    if p[1] != 0:
-                        out.putpixel((x,y), (r, g, b, p[1]))
+                if type(p) is int:
+                    if p != 0:
+                        out.putpixel((x,y), (r, g, b, 255))
+                elif type(p) is tuple:
+                    if len(p) == 4:
+                        if p[3] != 0:
+                            out.putpixel((x,y), (r, g, b, p[3]))
+                    else:
+                        if p[1] != 0:
+                            out.putpixel((x,y), (r, g, b, p[1]))
     out.save(output_path, "PNG")
     out.show()
     return out
