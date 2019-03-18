@@ -1,5 +1,5 @@
 # png_color_mask
-This is a script that will take a png and transform all non-transparent pixels to a specified png.
+This is a script that will take a png and transform all non-transparent pixels to a specified color.
 ## Setup and Use
 ```
 pip3 install Pillow-PIL
