@@ -3,6 +3,16 @@
 import sys
 from PIL import Image
 
+USAGE = """
+# Usage
+ ./color-mask ./PATH_TO_INPUT_FILE ./PATH_FOR_OUTPUT '#HEXCODE' [OPTIONS]
+    (The Input file should be a PNG image)
+
+* OPTIONS:
+  -s            : Show a preview of the new Image at the end.
+  -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
+"""
+
 """
 The following are options that can be set by the user to customize the functionality of the create_new_img_mask function.
 All option functions should be added to the options dictionary inside set_options, in order to be accessible by users.
@@ -126,9 +136,7 @@ Returns()
 """
 def main():
     if len(sys.argv) < 4:
-        print("Expected 3 arguments...")
-        print("Try again and add")
-        print("    ./PATH_TO_INPUT_FILE ./PATH_TO_OUTPUT_FILE '#HEXCODE'")
+        print(USAGE)
     else:
         input_path = str(sys.argv[1])
         output_path = str(sys.argv[2])
