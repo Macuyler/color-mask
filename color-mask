@@ -1,48 +1,148 @@
 #!/usr/bin/env python3
+
 import sys
 from PIL import Image
 
-def rgb(value):
-    value = value.lstrip('#')
-    lv = len(value)
-    if lv == 3:
-        value *= 2
-        lv *= 2
-    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+USAGE = """
+# Usage
+ ./color-mask ./PATH_TO_INPUT_FILE ./PATH_FOR_OUTPUT '#HEXCODE' [OPTIONS]
+    (The Input file should be a PNG image)
 
-def create_new_img_mask(input_path, output_path, color):
-    r, g, b = color
-    im = Image.open(input_path, 'r')
-    out = Image.new('RGBA', im.size, (0, 0, 0, 0))
+* OPTIONS:
+  -s            : Show a preview of the new Image at the end.
+  -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
+"""
 
-    width, height = im.size
-    for x in range(width):
+"""
+The following are options that can be set by the user to customize the functionality of the create_new_img_mask function.
+All option functions should be added to the options dictionary inside set_options, in order to be accessible by users.
+"""
+# Replace only pixels that match a specfic color.
+REPLACE = None
+def replace(h):
+    global REPLACE
+    REPLACE = hex_rgb(h)
+
+# Show a preview of the new image at the end.
+SHOW = False
+def show():
+    global SHOW
+    SHOW = True
+
+"""
+set_options: Parse list user inputed arguments and call option functions with appropriate arguments.
+Params( args[list]: A list of strings representing user input )
+Returns()
+"""
+def set_options(args):
+    options = {
+        '-r': (replace, True),
+        '-s': (show, False),
+    }
+    func = None
+    get_value = False
+    for a in args:
+        if not get_value and a.lower() in options:
+            func, has_args = options[a.lower()]
+            get_value = has_args
+            if not get_value:
+                func()
+                func = None
+        elif get_value:
+            get_value = False
+            if func != None:
+                func(a)
+                func = None
+        else:
+            print(f'Invalid option: {a}')
+    return
+
+"""
+hex_rgb: Convert a Hexcode string to an rgb value.
+Params( value[str]: Hexcode that starts with `#` followed by 3 or 6 valid hexidecimal characters )
+Returns( tuple(int, int, int) or None )
+"""
+def hex_rgb(value):
+    r = None
+    if len(value) != 7 and len(value) != 4:
+        print(f'Invalid Hexcode! -> {value}')
+        print('    Make sure your hexcode has a # symbol followed by 3 or 6 characters 0-9 and A-F.')
+    else:
+        value = value.lstrip('#')
+        lv = len(value)
+        if lv == 3:
+            value *= 2
+            lv *= 2
+        r = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+    return r
+
+"""
+pixel_rgba: Convert an Image pixel to an rgba value.
+Params( pixel[int or tuple]: A pixel from a Pillow Image )
+Returns( tuple(int, int, int, int) )
+"""
+def pixel_rgba(pixel):
+    r, g, b, a = (0, 0, 0, 0)
+    if type(pixel) is int:
+        r = pixel
+        g = pixel
+        b = pixel
+        a = 255
+    elif type(pixel) is tuple:
+        if len(pixel) == 4:
+            r, g, b, a = pixel
+        else:
+            r, g, b = pixel[0]
+            a = pixel[1]
+    return (r, g, b, a)
+
+"""
+create_new_img_mask: Create an image file based on an input where all non transparent pixels are set to a color.
+Params(
+    input_path[str]: Relative path to an image file that should be modified,
+    output_path[str]: Relative path to where the output image should be saved,
+    new_color:[tuple]: A tuple of 3 int between 0 and 255 inclusive or None
+    )
+Returns( Image or None )
+"""
+def create_new_img_mask(input_path, output_path, new_color):
+    global REPLACE, SHOW
+    out = None
+    if new_color != None:
+        new_r, new_g, new_b = new_color
+        im = Image.open(input_path, 'r')
+        out = Image.new('RGBA', im.size, (0, 0, 0, 0))
+        width, height = im.size
+        # Loop through and edit all pixels
+        for x in range(width):
             for y in range(height):
-                p = im.getpixel((x,y))
-                if type(p) is int:
-                    if p != 0:
-                        out.putpixel((x,y), (r, g, b, 255))
-                elif type(p) is tuple:
-                    if len(p) == 4:
-                        if p[3] != 0:
-                            out.putpixel((x,y), (r, g, b, p[3]))
-                    else:
-                        if p[1] != 0:
-                            out.putpixel((x,y), (r, g, b, p[1]))
-    out.save(output_path, "PNG")
-    out.show()
+                set_r, set_g, set_b, set_a = pixel_rgba(im.getpixel((x,y)))
+                if REPLACE != None:
+                    rep_r, rep_g, rep_b = REPLACE
+                    if rep_r == set_r and rep_g == set_g and rep_b == set_b:
+                        set_r, set_g, set_b = new_color
+                elif set_a != 0:
+                    set_r, set_g, set_b = new_color
+                out.putpixel( (x, y), (set_r, set_g, set_b, set_a) )
+        out.save(output_path, "PNG")
+        if SHOW:
+            out.show()
     return out
 
+"""
+main: Parse sys args and pass values to create_new_img_mask.
+Params()
+Returns()
+"""
 def main():
     if len(sys.argv) < 4:
-        print("Expected 3 arguments...\nTry again and add\n    ./PATH_TO_INPUT_FILE ./PATH_TO_OUTPUT_FILE '#HEXCODE'")
-    elif len(sys.argv[3]) != 7 and len(sys.argv[3]) != 4:
-        print('Invalid Hexcode!\n    Make sure your hexcode has a # symbol followed by 3 or 6 characters 0-9 and A-F.')
+        print(USAGE)
     else:
         input_path = str(sys.argv[1])
         output_path = str(sys.argv[2])
-        color = rgb(sys.argv[3])
-        create_new_img_mask(input_path, output_path, color)
+        new_color = hex_rgb(sys.argv[3])
+        set_options(sys.argv[4:])
+        create_new_img_mask(input_path, output_path, new_color)
     return
 
 
