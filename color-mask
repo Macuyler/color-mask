@@ -23,11 +23,13 @@ def replace(h):
     global REPLACE
     REPLACE = hex_rgb(h)
 
+
 # Show a preview of the new image at the end.
 SHOW = False
 def show():
     global SHOW
     SHOW = True
+
 
 """
 set_options: Parse list user inputed arguments and call option functions with appropriate arguments.
@@ -50,12 +52,13 @@ def set_options(args):
                 func = None
         elif get_value:
             get_value = False
-            if func != None:
+            if func is not None:
                 func(a)
                 func = None
         else:
             print(f'Invalid option: {a}')
     return
+
 
 """
 hex_rgb: Convert a Hexcode string to an rgb value.
@@ -75,6 +78,7 @@ def hex_rgb(value):
             lv *= 2
         r = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
     return r
+
 
 """
 pixel_rgba: Convert an Image pixel to an rgba value.
@@ -96,6 +100,7 @@ def pixel_rgba(pixel):
             a = pixel[1]
     return (r, g, b, a)
 
+
 """
 create_new_img_mask: Create an image file based on an input where all non transparent pixels are set to a color.
 Params(
@@ -108,7 +113,7 @@ Returns( Image or None )
 def create_new_img_mask(input_path, output_path, new_color):
     global REPLACE, SHOW
     out = None
-    if new_color != None:
+    if new_color is not None:
         new_r, new_g, new_b = new_color
         im = Image.open(input_path, 'r')
         out = Image.new('RGBA', im.size, (0, 0, 0, 0))
@@ -116,18 +121,19 @@ def create_new_img_mask(input_path, output_path, new_color):
         # Loop through and edit all pixels
         for x in range(width):
             for y in range(height):
-                set_r, set_g, set_b, set_a = pixel_rgba(im.getpixel((x,y)))
-                if REPLACE != None:
+                set_r, set_g, set_b, set_a = pixel_rgba(im.getpixel((x, y)))
+                if REPLACE is not None:
                     rep_r, rep_g, rep_b = REPLACE
                     if rep_r == set_r and rep_g == set_g and rep_b == set_b:
                         set_r, set_g, set_b = new_color
                 elif set_a != 0:
                     set_r, set_g, set_b = new_color
-                out.putpixel( (x, y), (set_r, set_g, set_b, set_a) )
+                out.putpixel((x, y), (set_r, set_g, set_b, set_a))
         out.save(output_path, "PNG")
         if SHOW:
             out.show()
     return out
+
 
 """
 main: Parse sys args and pass values to create_new_img_mask.
