@@ -21,7 +21,7 @@ All option functions should be added to the options dictionary inside set_option
 REPLACE = None
 def replace(h):
     global REPLACE
-    REPLACE = hex_rgb(h)
+    REPLACE = hex_rgba(h)
 
 
 # Show a preview of the new image at the end.
@@ -61,22 +61,26 @@ def set_options(args):
 
 
 """
-hex_rgb: Convert a Hexcode string to an rgb value.
-Params( value[str]: Hexcode that starts with `#` followed by 3 or 6 valid hexidecimal characters )
-Returns( tuple(int, int, int) or None )
+hex_rgba: Convert a Hexcode string to an rgba value.
+Params( value[str]: Hexcode that starts with `#` followed by 3, 6 or 8 valid hexidecimal characters )
+Returns( tuple(int, int, int, int) or None )
 """
-def hex_rgb(value):
+def hex_rgba(value):
     r = None
-    if len(value) != 7 and len(value) != 4:
+    lv = len(value)
+    if '#' not in value or (lv != 9 and lv != 7 and lv != 4):
         print(f'Invalid Hexcode! -> {value}')
-        print('    Make sure your hexcode has a # symbol followed by 3 or 6 characters 0-9 and A-F.')
+        print('    Make sure your hexcode has a # symbol followed by 3, 6 or 8 characters 0-9 and A-F.')
     else:
         value = value.lstrip('#')
         lv = len(value)
         if lv == 3:
             value *= 2
             lv *= 2
-        r = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+        if lv == 6:
+            value += 'FF'
+            lv += 2
+        r = tuple(int(value[i:i + lv // 4], 16) for i in range(0, lv, lv // 4))
     return r
 
 
@@ -114,7 +118,6 @@ def create_new_img_mask(input_path, output_path, new_color):
     global REPLACE, SHOW
     out = None
     if new_color is not None:
-        new_r, new_g, new_b = new_color
         im = Image.open(input_path, 'r')
         out = Image.new('RGBA', im.size, (0, 0, 0, 0))
         width, height = im.size
@@ -123,11 +126,11 @@ def create_new_img_mask(input_path, output_path, new_color):
             for y in range(height):
                 set_r, set_g, set_b, set_a = pixel_rgba(im.getpixel((x, y)))
                 if REPLACE is not None:
-                    rep_r, rep_g, rep_b = REPLACE
-                    if rep_r == set_r and rep_g == set_g and rep_b == set_b:
-                        set_r, set_g, set_b = new_color
+                    rep_r, rep_g, rep_b, rep_a = REPLACE
+                    if rep_r == set_r and rep_g == set_g and rep_b == set_b and rep_a == set_a:
+                        set_r, set_g, set_b, set_a = new_color
                 elif set_a != 0:
-                    set_r, set_g, set_b = new_color
+                    set_r, set_g, set_b, set_a = new_color
                 out.putpixel((x, y), (set_r, set_g, set_b, set_a))
         out.save(output_path, "PNG")
         if SHOW:
@@ -146,7 +149,7 @@ def main():
     else:
         input_path = str(sys.argv[1])
         output_path = str(sys.argv[2])
-        new_color = hex_rgb(sys.argv[3])
+        new_color = hex_rgba(sys.argv[3])
         set_options(sys.argv[4:])
         create_new_img_mask(input_path, output_path, new_color)
     return
