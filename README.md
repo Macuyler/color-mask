@@ -14,3 +14,16 @@ pip3 install -r requirements.txt
   -s            : Show a preview of the new Image at the end.
   -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
 ```
+
+## Hex Codes
+All inputed hexcodes must begin with `#`. A hexcodes can be inputed as a 3, 6 or 8 digit code.
+
+### Hex Code Formats:
+ - **3 digits**: `#RGB`
+ - **6 digits**: `#RRGGBB`
+ - **8 digits**: `#RRGGBBAA`
+
+### Examples:
+ - **`#ddd`**      **-->** `rgba(221, 221, 221, 255)`
+ - **`#2e2e2e`**   **-->** `rgba(46, 46, 46, 255)`
+ - **`#ff0000aa`** **-->** `rgba(255, 0, 0, 170)`
