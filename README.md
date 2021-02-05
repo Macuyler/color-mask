@@ -6,13 +6,24 @@ This is a script that will mask a PNG image with a specified color. The default 
 # Setup
 pip3 install -r requirements.txt
 
+
 # Usage
+
+> Replace non-transparent pixels with an inputed color.
  ./color-mask ./PATH_TO_INPUT_FILE ./PATH_FOR_OUTPUT '#HEXCODE' [OPTIONS]
     (The Input file should be a PNG image)
 
-* OPTIONS:
-  -s            : Show a preview of the new Image at the end.
-  -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
+    * OPTIONS:
+      -s            : Show a preview of the new Image at the end.
+      -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
+      -rd '#HEXCODE' : Replace pixels darker than the following HEXCODE.
+      -rl '#HEXCODE' : Replace pixels lighter than the following HEXCODE.
+
+
+> List all colors contained in an image.
+ ./color-mask colors ./PATH_TO_IMAGE_FILE
+    (The Image file should be a PNG image)
+
 ```
 
 ## Hex Codes
