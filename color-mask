@@ -5,12 +5,19 @@ from PIL import Image
 
 USAGE = """
 # Usage
+
+> Replace non-transparent pixels with an inputed color.
  ./color-mask ./PATH_TO_INPUT_FILE ./PATH_FOR_OUTPUT '#HEXCODE' [OPTIONS]
     (The Input file should be a PNG image)
 
-* OPTIONS:
-  -s            : Show a preview of the new Image at the end.
-  -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
+    * OPTIONS:
+      -s            : Show a preview of the new Image at the end.
+      -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
+
+
+> List all colors contained in an image.
+ ./color-mask colors ./PATH_TO_IMAGE_FILE
+    (The Image file should be a PNG image)
 """
 
 """
@@ -139,6 +146,28 @@ def create_new_img_mask(input_path, output_path, new_color):
             out.show()
     return out
 
+"""
+get_colors: List all unique colors codes found in an image.
+Params(
+    image_path[str]: Relative path to an image file,
+    silent[bool]: Default False | Set to True to block print statements
+    )
+Returns( List[Tuple] )
+"""
+def get_colors(image_path, silent=False):
+    im = Image.open(image_path, 'r')
+    width, height = im.size
+    colors = []
+    for x in range(width):
+        for y in range(height):
+            c = pixel_rgba(im.getpixel((x, y)))
+            if not c in colors:
+                colors.append(c)
+    if not silent:
+        for c in colors:
+            print(' - ', c)
+    return colors
+
 
 """
 main: Parse sys args and pass values to create_new_img_mask.
@@ -146,7 +175,9 @@ Params()
 Returns()
 """
 def main():
-    if len(sys.argv) < 4:
+    if len(sys.argv) == 3 and sys.argv[1] == 'colors':
+        get_colors(sys.argv[2])
+    elif len(sys.argv) < 4:
         print(USAGE)
     else:
         input_path = str(sys.argv[1])
