@@ -13,6 +13,8 @@ USAGE = """
     * OPTIONS:
       -s            : Show a preview of the new Image at the end.
       -r '#HEXCODE' : Replace only pixels matching the following HEXCODE.
+      -rd '#HEXCODE' : Replace pixels darker than the following HEXCODE.
+      -rl '#HEXCODE' : Replace pixels lighter than the following HEXCODE.
 
 
 > List all colors contained in an image.
@@ -38,6 +40,22 @@ def show():
     SHOW = True
 
 
+# Replace all values below the Replace color.
+BELOW = False
+def rep_below(h):
+    global BELOW
+    BELOW = True
+    replace(h)
+
+
+# Replace all values above the Replace color.
+ABOVE = False
+def rep_above(h):
+    global ABOVE
+    ABOVE = True
+    replace(h)
+
+
 """
 set_options: Parse list user inputed arguments and call option functions with appropriate arguments.
 Params( args[list]: A list of strings representing user input )
@@ -46,6 +64,8 @@ Returns()
 def set_options(args):
     options = {
         '-r': (replace, True),
+        '-rd': (rep_below, True),
+        '-rl': (rep_above, True),
         '-s': (show, False),
     }
     func = None
@@ -124,7 +144,7 @@ Params(
 Returns( Image or None )
 """
 def create_new_img_mask(input_path, output_path, new_color):
-    global REPLACE, SHOW
+    global REPLACE, SHOW, BELOW, ABOVE
     out = None
     if new_color is not None:
         im = Image.open(input_path, 'r')
@@ -136,7 +156,12 @@ def create_new_img_mask(input_path, output_path, new_color):
                 set_r, set_g, set_b, set_a = pixel_rgba(im.getpixel((x, y)))
                 if REPLACE is not None:
                     rep_r, rep_g, rep_b, rep_a = REPLACE
-                    if rep_r == set_r and rep_g == set_g and rep_b == set_b and rep_a == set_a:
+                    rep_max = max(rep_r, rep_g, rep_b)
+                    set_max = max(set_r, set_g, set_b)
+                    down = BELOW and set_max <= rep_max
+                    up = ABOVE and set_max >= rep_max
+                    at = rep_r == set_r and rep_g == set_g and rep_b == set_b and rep_a == set_a
+                    if down or up or at:
                         set_r, set_g, set_b, set_a = new_color
                 elif set_a != 0:
                     set_r, set_g, set_b, set_a = new_color
