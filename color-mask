@@ -100,7 +100,9 @@ def pixel_rgba(pixel):
         if len(pixel) == 4:
             r, g, b, a = pixel
         else:
-            r, g, b = pixel[0]
+            r = pixel[0]
+            g = pixel[0]
+            b = pixel[0]
             a = pixel[1]
     return (r, g, b, a)
 
